@@ -122,7 +122,7 @@ def main():
                   ]
 
         if window is None:
-            window = sg.Window('Title', layout)
+            window = sg.Window('Edge Remote Oven Controller', layout)
 
         event, values = window.read()
         if event is None or event == 'Exit':
@@ -151,97 +151,101 @@ def main():
             prevTemp = adam.getTemp()
 
             # read profile only if field not empty
-            if values['-CSV_NAME-'] != '':
+            # if values['-CSV_NAME-'] != '':
+            #     dictList = owen.readProfile(values['-CSV_NAME-'])
+
+            if values['-CSV_NAME-'].endswith('.csv'):
                 dictList = owen.readProfile(values['-CSV_NAME-'])
 
-            allTime = ttcalc(dictList, 'Time')
-            allTemp = ttcalc(dictList, 'Temp')
+                allTime = ttcalc(dictList, 'Time')
+                allTemp = ttcalc(dictList, 'Temp')
 
-            axzero = plt.subplot()
-            axzero.plot(allTime, allTemp)
-            axzero.set_xlabel("Time (mins)")
-            axzero.set_ylabel("Temp (C)")
-            plt.show()
+                axzero = plt.subplot()
+                axzero.plot(allTime, allTemp)
+                axzero.set_xlabel("Time (mins)")
+                axzero.set_ylabel("Temp (C)")
+                plt.show()
 
         elif event == "Run Profile":
-            dictList = owen.readProfile(settings["csv_filepath"])
-            adam = CvilleOvenTranslator()
+            if values['-CSV_NAME-'].endswith('.csv'):
+                dictList = owen.readProfile(settings["csv_filepath"])
+                adam = CvilleOvenTranslator()
 
-            # weak handshake
-            if adam.getTemp() is None:
-                exit("Could not handshake with oven")
+                # weak handshake
+                if adam.getTemp() is None:
+                    exit("Could not handshake with oven")
 
-            prevTemp = adam.getTemp()
-            time = [0]
-            time_run = [0]              # FINISH LATER
-            total_time = 0
-            total_time_run = 0          # FINISH LATER
-            set_temp = [prevTemp]
-            get_temp = [prevTemp]
+                prevTemp = adam.getTemp()
+                time = [0]
+                time_run = [0]              # FINISH LATER
+                total_time = 0
+                total_time_run = 0          # FINISH LATER
+                set_temp = [prevTemp]
+                get_temp = [prevTemp]
 
-            allTime = ttcalc(dictList, 'Time')
-            allTemp = ttcalc(dictList, 'Temp')
+                allTime = ttcalc(dictList, 'Time')
+                allTemp = ttcalc(dictList, 'Temp')
 
-            fig, (ax0, ax1) = plt.subplots(2)
-            ax0.set_xlabel("Time (mins)")
-            ax0.set_ylabel("Temp (C)")
-            ax1.set_xlabel("Time (mins)")
-            ax1.set_ylabel("Temp (C)")
-            ax0.plot(allTime, allTemp)
+                fig, (ax0, ax1) = plt.subplots(2)
+                ax0.set_xlabel("Time (mins)")
+                ax0.set_ylabel("Temp (C)")
+                ax1.set_xlabel("Time (mins)")
+                ax1.set_ylabel("Temp (C)")
+                ax0.plot(allTime, allTemp)
 
-            for elem in dictList:
-                size_shift = abs(float(elem["Temp"]) - prevTemp)
-                targetTemp = float(elem["Temp"])
-                rampRate = float(elem["Ramp Rate"])
+                for elem in dictList:
+                    size_shift = abs(float(elem["Temp"]) - prevTemp)
+                    targetTemp = float(elem["Temp"])
+                    rampRate = float(elem["Ramp Rate"])
 
-                # convert to negative ramp rate if necessary
-                if targetTemp - prevTemp < 0:
-                    rampRate = -rampRate
+                    # convert to negative ramp rate if necessary
+                    if targetTemp - prevTemp < 0:
+                        rampRate = -rampRate
 
-                rampRate /= 10
-                accum_temp = 0
-                curr_temp = prevTemp
+                    rampRate /= 10
+                    accum_temp = 0
+                    curr_temp = prevTemp
 
-                # ramp
-                while accum_temp < size_shift:
-                    plt.cla()
-                    total_time += 0.1
-                    total_time_run += 0.1                   # FINISH LATER
-                    time.append(total_time)
-                    time_run.append(total_time_run)         # FINISH LATER
+                    # ramp
+                    while accum_temp < size_shift:
+                        plt.cla()
+                        total_time += 0.1
+                        total_time_run += 0.1                   # FINISH LATER
+                        time.append(total_time)
+                        time_run.append(total_time_run)         # FINISH LATER
 
-                    curr_temp += rampRate                   # increment current temperature
-                    curr_temp = round(curr_temp, 1)
-                    adam.setTemp(curr_temp)
-                    set_temp.append(curr_temp)
-                    get_temp.append(adam.getTemp())
+                        curr_temp += rampRate                   # increment current temperature
+                        curr_temp = round(curr_temp, 1)
+                        adam.setTemp(curr_temp)
+                        set_temp.append(curr_temp)
+                        get_temp.append(adam.getTemp())
 
-                    ax0.plot(time, get_temp)
-                    ax1.plot(time, set_temp)
-                    ax1.plot(time, get_temp)
-                    plt.pause(6)
-                    # writeTempOven(curr_temp)
+                        ax0.plot(time, get_temp)
+                        ax1.plot(time, set_temp)
+                        ax1.plot(time, get_temp)
+                        plt.pause(6)
+                        # writeTempOven(curr_temp)
 
-                    accum_temp += abs(rampRate)
+                        accum_temp += abs(rampRate)
 
-                accum_time = 0
+                    accum_time = 0
 
-                # dwell
-                while accum_time < float(elem["Time"]):
-                    plt.cla()
+                    # dwell
+                    while accum_time < float(elem["Time"]):
+                        plt.cla()
 
-                    accum_time += 0.1
-                    total_time += 0.1
-                    time.append(total_time)
-                    set_temp.append(curr_temp)
-                    get_temp.append(adam.getTemp())
+                        accum_time += 0.1
+                        total_time += 0.1
+                        time.append(total_time)
+                        set_temp.append(curr_temp)
+                        get_temp.append(adam.getTemp())
 
-                    ax0.plot(time, get_temp)
-                    ax1.plot(time, set_temp)
-                    ax1.plot(time, get_temp)
-                    plt.pause(6)
+                        ax0.plot(time, get_temp)
+                        ax1.plot(time, set_temp)
+                        ax1.plot(time, get_temp)
+                        plt.pause(6)
 
-                prevTemp = targetTemp
+                    prevTemp = targetTemp
 
 
 if __name__ == "__main__":
