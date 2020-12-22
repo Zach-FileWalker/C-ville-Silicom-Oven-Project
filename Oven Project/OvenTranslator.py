@@ -1,15 +1,9 @@
-import serial
 from abc import ABC, abstractmethod
 
 class OvenTranslator(ABC):
 
     # serial connection with oven
     global oven
-
-    # # Constructor
-    # # Abstract
-    # def __init__(self):
-    #     pass
 
     # Is the temp param within reasonable bounds (Celsius)?
     # Concrete
@@ -20,17 +14,7 @@ class OvenTranslator(ABC):
         else:
             return False
 
-    # # Turn oven on
-    # # Abstract
-    # def powerOn(self):
-    #     pass
-    #
-    # # Turn oven off
-    # # Abstract
-    # def powerOff(self):
-    #     pass
-
-    # Set the oven to a specified temp
+    # Turn oven on
     # Abstract
     def setTemp(self, temp):
         pass
