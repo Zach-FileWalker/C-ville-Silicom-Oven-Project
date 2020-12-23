@@ -168,7 +168,7 @@ def main():
 
         elif event == "Run Profile":
             if values['-CSV_NAME-'].endswith('.csv'):
-                dictList = owen.readProfile(settings["csv_filepath"])
+                dictList = owen.readProfile(values['-CSV_NAME-'])
                 adam = CvilleOvenTranslator()
 
                 # weak handshake

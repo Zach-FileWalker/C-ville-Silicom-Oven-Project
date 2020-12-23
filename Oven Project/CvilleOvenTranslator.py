@@ -6,6 +6,24 @@ from telnetlib import Telnet
 
 class CvilleOvenTranslator(OvenTranslator):
 
+    def load_default_settings(self):
+        # setup
+        server = Telnet("172.24.0.7")
+        server.write(b"= PB1 5.5")
+        server.write(b"= PB2 1.5")
+        server.write(b"= RE1 0.00")
+        server.write(b"= RE2 0.00")
+        server.write(b"= RA1 0.00")
+        server.write(b"= RA2 0.35")
+        server.write(b"= CT1 5")
+        server.write(b"= CT2 5")
+        server.write(b"= DB 0.0")
+        server.write(b"= CAL 0.0")
+        server.write(b"= AUT 0")
+        server.write(b"= C_F C")
+        server.write(b"= RL -73.4")
+        server.write(b"= RH 200.0")
+
     def getTemp(self):
 
         # setup
