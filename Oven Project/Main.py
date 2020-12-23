@@ -118,8 +118,8 @@ def main():
                   [sg.Text("   ")],
                   [sg.Text('CSV File:', size=(8, 1)), sg.Input(key="-CSV_NAME-", default_text=settings['csv_filepath']),
                    sg.FileBrowse(), sg.Button("Save as Default CSV File")],
-                  [sg.Button("Display Profile as Graph"), sg.Button("Run Profile")]
-                  ]
+                  [sg.Button("Display Profile as Graph"), sg.Button("Run Profile"),
+                   sg.Button("Load Default Oven Settings")]]
 
         if window is None:
             window = sg.Window('Edge Remote Oven Controller', layout)
@@ -142,6 +142,10 @@ def main():
 
         elif event == "Preview Themes":
             sg.theme_previewer(scrollable=True)
+
+        elif event == "Load Default Oven Settings":
+            adam = CvilleOvenTranslator()
+            adam.load_default_settings()
 
         elif event == "Display Profile as Graph":
             adam = CvilleOvenTranslator()
