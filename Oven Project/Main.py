@@ -148,30 +148,59 @@ def main():
             adam.load_default_settings()
 
         elif event == "Display Profile as Graph":
-            adam = CvilleOvenTranslator()
-            if adam.getTemp() == None:
-                exit("Could not handshake with oven")
 
-            prevTemp = adam.getTemp()
+            # if csv not in correct format
+            format = owen.verifyFormat(values['-CSV_NAME-'])
+            if format != True:
+                # display error message
+                while True:
+                    popup_layout = [[sg.Text(format)]]
+                    popup_window = sg.Window('Error Message', popup_layout)
 
-            # read profile only if field not empty
-            # if values['-CSV_NAME-'] != '':
-            #     dictList = owen.readProfile(values['-CSV_NAME-'])
+                    popup_event, popup_values = popup_window.read()
+                    if popup_event is None or popup_event == 'Exit':
+                        break
 
-            if values['-CSV_NAME-'].endswith('.csv'):
-                dictList = owen.readProfile(values['-CSV_NAME-'])
+            else:
+                adam = CvilleOvenTranslator()
 
-                allTime = ttcalc(dictList, 'Time')
-                allTemp = ttcalc(dictList, 'Temp')
+                # weak handshake
+                if adam.getTemp() == None:
+                    exit("Could not handshake with oven")
 
-                axzero = plt.subplot()
-                axzero.plot(allTime, allTemp)
-                axzero.set_xlabel("Time (mins)")
-                axzero.set_ylabel("Temp (C)")
-                plt.show()
+                prevTemp = adam.getTemp()
+
+                # read profile only if field not empty
+                # if values['-CSV_NAME-'] != '':
+                #     dictList = owen.readProfile(values['-CSV_NAME-'])
+
+                if values['-CSV_NAME-'].endswith('.csv'):
+                    dictList = owen.readProfile(values['-CSV_NAME-'])
+
+                    allTime = ttcalc(dictList, 'Time')
+                    allTemp = ttcalc(dictList, 'Temp')
+
+                    axzero = plt.subplot()
+                    axzero.plot(allTime, allTemp)
+                    axzero.set_xlabel("Time (mins)")
+                    axzero.set_ylabel("Temp (C)")
+                    plt.show()
 
         elif event == "Run Profile":
-            if values['-CSV_NAME-'].endswith('.csv'):
+
+            # if csv not in correct format
+            format = owen.verifyFormat(values['-CSV_NAME-'])
+            if format != True:
+                # display error message
+                while True:
+                    popup_layout = [[sg.Text(format)]]
+                    popup_window = sg.Window('Error Message', popup_layout)
+
+                    popup_event, popup_values = popup_window.read()
+                    if popup_event is None or popup_event == 'Exit':
+                        break
+
+            else:
                 dictList = owen.readProfile(values['-CSV_NAME-'])
                 adam = CvilleOvenTranslator()
 
@@ -190,12 +219,13 @@ def main():
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
 
-                fig, (ax0, ax1) = plt.subplots(2)
-                ax0.set_xlabel("Time (mins)")
-                ax0.set_ylabel("Temp (C)")
-                ax1.set_xlabel("Time (mins)")
-                ax1.set_ylabel("Temp (C)")
-                ax0.plot(allTime, allTemp)
+                # fig, (ax0, ax1) = plt.subplots(2)
+                ax = plt.subplot()
+                ax.set_xlabel("Time (mins)")
+                ax.set_ylabel("Temp (C)")
+                # ax1.set_xlabel("Time (mins)")
+                # ax1.set_ylabel("Temp (C)")
+                ax.plot(allTime, allTemp)
 
                 for elem in dictList:
                     size_shift = abs(float(elem["Temp"]) - prevTemp)
@@ -224,9 +254,10 @@ def main():
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
-                        ax0.plot(time, get_temp)
-                        ax1.plot(time, set_temp)
-                        ax1.plot(time, get_temp)
+                        ax.plot(allTime, allTemp)
+                        ax.plot(time, get_temp)
+                        # ax1.plot(time, set_temp)
+                        # ax1.plot(time, get_temp)
                         plt.pause(6)
                         # writeTempOven(curr_temp)
 
@@ -244,9 +275,10 @@ def main():
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
-                        ax0.plot(time, get_temp)
-                        ax1.plot(time, set_temp)
-                        ax1.plot(time, get_temp)
+                        ax.plot(allTime, allTemp)
+                        ax.plot(time, get_temp)
+                        # ax1.plot(time, set_temp)
+                        # ax1.plot(time, get_temp)
                         plt.pause(6)
 
                     prevTemp = targetTemp

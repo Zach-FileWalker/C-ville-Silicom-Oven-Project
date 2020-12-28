@@ -12,6 +12,7 @@ class CSVManager:
 
         self.profilesDict = csv.DictReader(self.csv_profiles_dir)
 
+    # add a new profile
     def addProfile(self, name: str):
         fileName = name
 
@@ -44,6 +45,7 @@ class CSVManager:
 
         return True
 
+    # modify a profile
     def modProfile(self, profileName: str, dictList: [{}]):
 
         if path.exists(profileName):
@@ -58,6 +60,8 @@ class CSVManager:
 
         print("Error: This file does not exist, cannot write to it")
 
+    # read a profile
+    # returns a list of dictionaries
     def readProfile(self, fileName: str):
 
         # setup
@@ -72,7 +76,7 @@ class CSVManager:
         # convert elements to float
         for elem in dictList:
             elem["Time"] = float(elem["Time"])
-            elem["Temp"] = float(elem["Temp"])
+            elem["Temp"] = round(float(elem["Temp"]), 1)
             elem["Ramp Rate"] = float(elem["Ramp Rate"])
 
         # close file
@@ -116,3 +120,43 @@ class CSVManager:
             zlist.append(elem["Ramp Rate"])
 
         return zlist
+
+    # check if a profile is in a valid format
+    # returns true if all correct and a string with error message if something is incorrect
+    def verifyFormat(self, fileName: str):
+        if fileName.endswith(".csv"):
+            profile = open(fileName, "r")               # open the file
+            profileReader = csv.DictReader(profile)     # create reader from opened file
+            fields = profileReader.fieldnames           # get list of fieldnames
+            dictList = []  # create empty list of csv elements
+
+            # check all fieldnames
+            if "Time" in fields and "Temp" in fields and "Ramp Rate" in fields:
+
+                # add csv items to list from reader
+                for row in profileReader:
+                    dictList.append(row)
+
+                # # printing original string
+                # print("The original string : " + str(test_string))
+
+                # using isdigit() + replace()
+                # Check for float string
+                # res = test_string.replace('.', '', 1).isdigit()
+
+                # check the elements in CSV file
+                for elem in dictList:
+                    if not (elem["Time"] != None and elem["Time"].replace('.', '', 1).isdigit()
+                            and elem["Temp"] != None and elem["Temp"].replace('.', '', 1).isdigit()
+                            and elem["Ramp Rate"] != None and elem["Ramp Rate"].replace('.', '', 1).isdigit()):
+
+                        return "Error: Incorrect element in CSV file"
+
+                # return true if all elements checked and correct
+                return True
+
+            # return error if not all correct fields
+            return "Error: Missing correct field names"
+
+        # return error if not a csv file
+        return "Error: Not a CSV file"
