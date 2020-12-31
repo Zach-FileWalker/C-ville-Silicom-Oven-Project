@@ -57,7 +57,7 @@ class CvilleOvenTranslator(OvenTranslator):
 
             # input converter
             for char in decoded_input:
-                if char.isdigit() or char == ".":
+                if char.isdigit() or char == "." or char == "-":
                     float_input += char
 
             server.close()

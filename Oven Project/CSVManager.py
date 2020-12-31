@@ -147,7 +147,7 @@ class CSVManager:
                 # check the elements in CSV file
                 for elem in dictList:
                     if not (elem["Time"] != None and elem["Time"].replace('.', '', 1).isdigit()
-                            and elem["Temp"] != None and elem["Temp"].replace('.', '', 1).isdigit()
+                            and elem["Temp"] != None and elem["Temp"].replace('-', '', 1).replace('.', '', 1).isdigit()
                             and elem["Ramp Rate"] != None and elem["Ramp Rate"].replace('.', '', 1).isdigit()):
 
                         return "Error: Incorrect element in CSV file"
