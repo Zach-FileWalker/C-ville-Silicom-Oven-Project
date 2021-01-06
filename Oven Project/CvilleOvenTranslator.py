@@ -44,19 +44,23 @@ class CvilleOvenTranslator(OvenTranslator):
 
     def getTemp(self):
 
-        # setup
-        server = Telnet("172.24.0.7")
-        server.write(b"? C1\n")
-        raw_input = server.read_until(b"\r")
-        decoded_input = raw_input.decode("ascii")
-
-        # input converter
         float_input = ""
-        for char in decoded_input:
-            if char.isdigit() or char == ".":
-                float_input += char
 
-        server.close()
+        # while float_input is not a decimal
+        while not float_input.__contains__("."):
+
+            # setup
+            server = Telnet("172.24.0.7")
+            server.write(b"? C1\n")
+            raw_input = server.read_until(b"\r")
+            decoded_input = raw_input.decode("ascii")
+
+            # input converter
+            for char in decoded_input:
+                if char.isdigit() or char == ".":
+                    float_input += char
+
+            server.close()
 
         return float(float_input)
 
