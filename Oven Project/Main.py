@@ -15,44 +15,63 @@ def ttcalc(dictList: [{}], type: str):
     ttime = 0                       # total time
     datime = []
     datemp = []
+    flag = False                    # flag for out-of-bounds ramp rates
 
     for elem in dictList:
         sshift = abs(float(elem["Temp"]) - prevtemp)    # size of the shift
         targtemp = float(elem["Temp"])                  # target temp
         rrate = float(elem["Ramp Rate"])                # ramp rate
 
+        # convert to negative ramp rate if decrease in temp
         if targtemp - prevtemp < 0:
             rrate = -rrate
 
-        rrate /= 10
-        atemp = 0               # accumulated temp
-        ctemp = prevtemp        # current temp
+        # if ramp rate outside oven limits:
+        if type == 'Temp' and (not -10 <= rrate <= 17):
+            flag = True
 
-        # ramp
-        while atemp < sshift:
-            ttime += 0.1
-            datime.append(ttime)
+            # display error message
+            while True:
+                popup_layout_2 = [[sg.Text("Error: Ramp rate outside oven limits")]]
+                popup_window_2 = sg.Window('Error Message', popup_layout_2)
 
-            ctemp += rrate
-            datemp.append(ctemp)
+                popup_event_2, popup_values_2 = popup_window_2.read()
+                if popup_event_2 is None or popup_event_2 == 'Exit':
+                    break
 
-            atemp += abs(rrate)
+        else:
+            rrate /= 10
+            atemp = 0               # accumulated temp
+            ctemp = prevtemp        # current temp
 
-        atime = 0       # accumulated time
+            # ramp
+            while atemp < sshift:
+                ttime += 0.1
+                datime.append(ttime)
 
-        # dwell
-        while atime < float(elem["Time"]):
-            atime += 0.1
-            ttime += 0.1
-            datime.append(ttime)
-            datemp.append(ctemp)
+                ctemp += rrate
+                datemp.append(ctemp)
 
-        prevtemp = targtemp     # set prevtemp in preparation for next loop
+                atemp += abs(rrate)
+
+            atime = 0       # accumulated time
+
+            # dwell
+            while atime < float(elem["Time"]):
+                atime += 0.1
+                ttime += 0.1
+                datime.append(ttime)
+                datemp.append(ctemp)
+
+            prevtemp = targtemp     # set prevtemp in preparation for next loop
 
     if type == 'Time':
         return datime
-    elif type == 'Temp':
+    elif type == 'Temp' and flag == False:
         return datemp
+
+    # else return error
+    return -1
 
 
 # JSON settings loader upon program startup/update
@@ -168,8 +187,6 @@ def main():
                 if adam.getTemp() == None:
                     exit("Could not handshake with oven")
 
-                prevTemp = adam.getTemp()
-
                 # read profile only if field not empty
                 # if values['-CSV_NAME-'] != '':
                 #     dictList = owen.readProfile(values['-CSV_NAME-'])
@@ -180,11 +197,12 @@ def main():
                     allTime = ttcalc(dictList, 'Time')
                     allTemp = ttcalc(dictList, 'Temp')
 
-                    axzero = plt.subplot()
-                    axzero.plot(allTime, allTemp)
-                    axzero.set_xlabel("Time (mins)")
-                    axzero.set_ylabel("Temp (C)")
-                    plt.show()
+                    if allTime != -1 and allTemp != -1:
+                        axzero = plt.subplot()
+                        axzero.plot(allTime, allTemp)
+                        axzero.set_xlabel("Time (mins)")
+                        axzero.set_ylabel("Temp (C)")
+                        plt.show()
 
         elif event == "Run Profile":
 
@@ -210,9 +228,9 @@ def main():
 
                 prevTemp = adam.getTemp()
                 time = [0]
-                time_run = [0]              # FINISH LATER
+                # time_run = [0]              # FINISH LATER
                 total_time = 0
-                total_time_run = 0          # FINISH LATER
+                # total_time_run = 0          # FINISH LATER
                 set_temp = [prevTemp]
                 get_temp = [prevTemp]
 
@@ -244,9 +262,9 @@ def main():
                     while accum_temp < size_shift:
                         plt.cla()
                         total_time += 0.1
-                        total_time_run += 0.1                   # FINISH LATER
+                        # total_time_run += 0.1                   # FINISH LATER
                         time.append(total_time)
-                        time_run.append(total_time_run)         # FINISH LATER
+                        # time_run.append(total_time_run)         # FINISH LATER
 
                         curr_temp += rampRate                   # increment current temperature
                         curr_temp = round(curr_temp, 1)
