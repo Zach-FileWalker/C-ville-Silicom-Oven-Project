@@ -3,6 +3,7 @@ from os import system
 from OvenTranslator import OvenTranslator
 from telnetlib import Telnet
 from time import sleep
+from sys import exit
 
 
 class CvilleOvenTranslator(OvenTranslator):
@@ -69,7 +70,7 @@ class CvilleOvenTranslator(OvenTranslator):
     #
     #     return float(decoded_input)
     
-    def getTemp(self):
+    def getTemp_sub(self):
         finalval = 0
         inputs = []
         # flag = 0        # DEBUG
@@ -126,14 +127,32 @@ class CvilleOvenTranslator(OvenTranslator):
 
         return finalval
 
-
         # return float(float_input)
 
-    def setTemp(self, temp: float):
+    def getTemp(self):
+        try:
+            return self.getTemp_sub()
+        except KeyboardInterrupt:
+            print("There was a keyboard interrupt")
+            exit("Keyboard Interrupt")
+        except:
+            print("Something went wrong in fetching the temperature. Trying again... ")
+            output = self.getTemp()
+            print("This time it worked successfully!")
+            return output
 
-        if self.isAcceptableTemp(temp):
-            server = Telnet("172.24.0.7")
-            param = "= SP1 " + str(temp) + "\n"
-            server.write(param.encode("ascii"))
-            sleep(0.4)
-            server.close()
+    def setTemp(self, temp: float):
+        try:
+            if self.isAcceptableTemp(temp):
+                server = Telnet("172.24.0.7")
+                param = "= SP1 " + str(temp) + "\n"
+                server.write(param.encode("ascii"))
+                sleep(0.4)
+                server.close()
+        except KeyboardInterrupt:
+            print("There was a keyboard interrupt")
+            exit("Keyboard Interrupt")
+        except:
+            print("There was an error in setting the temperature. Trying again... ")
+            self.setTemp(temp)
+            print("This time it worked successfully!")
