@@ -36,7 +36,7 @@ class CvilleOvenTranslator(OvenTranslator):
             sleep(0.1)
             server.write(b"= RH 200.0\n")
             sleep(0.1)
-            server.write(b"= PB1 5.5\n")
+            server.write(b"= PB1 4.0\n")
             sleep(0.1)
             server.close()
 

@@ -33,7 +33,7 @@ def ttcalc(dictList: [{}], type: str):
 
             # display error message
             while True:
-                popup_layout_2 = [[sg.Text("Error: Ramp rate outside oven limits (-10 and 17 degrees/minute)")]]
+                popup_layout_2 = [[sg.Text("Error: Ramp rate outside oven limits (10 for cooling and 17 for heating)")]]
                 popup_window_2 = sg.Window('Error Message', popup_layout_2)
 
                 popup_event_2, popup_values_2 = popup_window_2.read()
@@ -245,6 +245,9 @@ def main():
 
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
+
+                if allTime == -1 or allTemp == -1:
+                    break
 
                 ax = plt.subplot()
                 ax.set_xlabel("Time (mins)")
