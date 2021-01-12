@@ -37,28 +37,97 @@ class CvilleOvenTranslator(OvenTranslator):
             server.write(b"= RH 200.0\n")
             sleep(0.1)
             server.write(b"= PB1 5.5\n")
-
-    def getTemp(self):
-
-        float_input = ""
-
-        # while float_input is not a decimal
-        while not float_input.__contains__("."):
-
-            # setup
-            server = Telnet("172.24.0.7")
-            server.write(b"? C1\n")
-            raw_input = server.read_until(b"\r")
-            decoded_input = raw_input.decode("ascii")
-
-            # input converter
-            for char in decoded_input:
-                if char.isdigit() or char == "." or char == "-":
-                    float_input += char
-
+            sleep(0.1)
             server.close()
 
-        return float(float_input)
+    def is_float(self, value):
+        try:
+            float(value)
+            return True
+        except:
+            return False
+
+    # #######################################
+    #
+    #     decoded_input = ""
+    #
+    #     # while decoded_input is not a decimal
+    #     while not self.is_float(decoded_input):
+    #
+    #         # setup
+    #         server = Telnet("172.24.0.7")
+    #         server.write(b"? C1\n")
+    #         raw_input = server.read_until(b"\r")
+    #         decoded_input = raw_input.decode("ascii")
+    #
+    #         # input converter
+    #         for char in decoded_input:
+    #             if char.isdigit() or char == "." or char == "-":
+    #                 decoded_input += char
+    #
+    #         server.close()
+    #
+    #     return float(decoded_input)
+    
+    def getTemp(self):
+        finalval = 0
+        inputs = []
+        # flag = 0        # DEBUG
+
+        # get inputs
+        for i in range(2):
+            float_input = ""
+
+            # while decoded_input is not a float
+            while not self.is_float(float_input):
+                float_input = ""        # reset
+
+                # setup
+                server = Telnet("172.24.0.7")
+                server.write(b"? C1\n")
+                raw_input = server.read_until(b"\r")
+                decoded_input = raw_input.decode("ascii")
+
+                # input converter
+                for char in decoded_input:
+                    if char.isdigit() or char == "." or char == "-":
+                        float_input += char
+
+                # print(self.is_float(float_input))
+
+                # DEBUG
+                if len(float_input) > 4 or not self.is_float(float_input):
+                    print("DEBUG: NONRETURN " + str(float_input))
+                #     flag = 1
+
+                # print(float_input)
+
+                server.close()
+
+            inputs.append(float(float_input))
+
+        # DEBUG
+        # if flag == 1:
+        #     print("Breakpoint")
+        #     flag = 0
+        #     print(finalval)
+        #     flag = 0
+
+        if abs(inputs[0] - inputs[1]) < 1:
+            finalval = inputs[0]
+        else:
+            print("DEBUG: Recursive Breakpoint")
+            print("DEBUG: Former: " + str(inputs[0]) + " and " + str(inputs[1]))
+            finalval = self.getTemp()
+            print("DEBUG: Finalval: " + str(finalval))
+
+        # DEBUG
+        # print(finalval)
+
+        return finalval
+
+
+        # return float(float_input)
 
     def setTemp(self, temp: float):
 

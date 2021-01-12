@@ -6,6 +6,7 @@ from sys import exit
 from time import sleep
 from json import (load as jsonload, dump as jsondump)
 from os import path
+import subprocess, os, platform
 
 
 # Time/Temperature calculator for estimates
@@ -32,7 +33,7 @@ def ttcalc(dictList: [{}], type: str):
 
             # display error message
             while True:
-                popup_layout_2 = [[sg.Text("Error: Ramp rate outside oven limits")]]
+                popup_layout_2 = [[sg.Text("Error: Ramp rate outside oven limits (-10 and 17 degrees/minute)")]]
                 popup_window_2 = sg.Window('Error Message', popup_layout_2)
 
                 popup_event_2, popup_values_2 = popup_window_2.read()
@@ -138,7 +139,7 @@ def main():
                   [sg.Text('CSV File:', size=(8, 1)), sg.Input(key="-CSV_NAME-", default_text=settings['csv_filepath']),
                    sg.FileBrowse(), sg.Button("Save as Default CSV File")],
                   [sg.Button("Display Profile as Graph"), sg.Button("Run Profile"),
-                   sg.Button("Load Default Oven Settings")]]
+                   sg.Button("Load Default Oven Settings"), sg.Button("View README")]]
 
         if window is None:
             window = sg.Window('Edge Remote Oven Controller', layout)
@@ -166,6 +167,18 @@ def main():
             adam = CvilleOvenTranslator()
             adam.load_default_settings()
 
+        elif event == "View README":
+            filepath = os.path.join(os.getcwd(), "README.txt")
+
+            if platform.system() == 'Darwin':  # macOS
+                subprocess.call(('open', filepath))
+
+            elif platform.system() == 'Windows':  # Windows
+                os.startfile(filepath)
+
+            else:  # linux variants
+                subprocess.call(('xdg-open', filepath))
+
         elif event == "Display Profile as Graph":
 
             # if csv not in correct format
@@ -188,9 +201,6 @@ def main():
                     exit("Could not handshake with oven")
 
                 # read profile only if field not empty
-                # if values['-CSV_NAME-'] != '':
-                #     dictList = owen.readProfile(values['-CSV_NAME-'])
-
                 if values['-CSV_NAME-'].endswith('.csv'):
                     dictList = owen.readProfile(values['-CSV_NAME-'])
 
@@ -209,6 +219,7 @@ def main():
             # if csv not in correct format
             format = owen.verifyFormat(values['-CSV_NAME-'])
             if format != True:
+
                 # display error message
                 while True:
                     popup_layout = [[sg.Text(format)]]
@@ -228,21 +239,16 @@ def main():
 
                 prevTemp = adam.getTemp()
                 time = [0]
-                # time_run = [0]              # FINISH LATER
                 total_time = 0
-                # total_time_run = 0          # FINISH LATER
                 set_temp = [prevTemp]
                 get_temp = [prevTemp]
 
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
 
-                # fig, (ax0, ax1) = plt.subplots(2)
                 ax = plt.subplot()
                 ax.set_xlabel("Time (mins)")
                 ax.set_ylabel("Temp (C)")
-                # ax1.set_xlabel("Time (mins)")
-                # ax1.set_ylabel("Temp (C)")
                 ax.plot(allTime, allTemp)
 
                 for elem in dictList:
@@ -262,9 +268,7 @@ def main():
                     while accum_temp < size_shift:
                         plt.cla()
                         total_time += 0.1
-                        # total_time_run += 0.1                   # FINISH LATER
                         time.append(total_time)
-                        # time_run.append(total_time_run)         # FINISH LATER
 
                         curr_temp += rampRate                   # increment current temperature
                         curr_temp = round(curr_temp, 1)
@@ -274,10 +278,7 @@ def main():
 
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        # ax1.plot(time, set_temp)
-                        # ax1.plot(time, get_temp)
                         plt.pause(6)
-                        # writeTempOven(curr_temp)
 
                         accum_temp += abs(rampRate)
 
@@ -295,8 +296,6 @@ def main():
 
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        # ax1.plot(time, set_temp)
-                        # ax1.plot(time, get_temp)
                         plt.pause(6)
 
                     prevTemp = targetTemp
