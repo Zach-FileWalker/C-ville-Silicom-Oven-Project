@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from CvilleOvenTranslator import CvilleOvenTranslator
 import PySimpleGUI as sg
 from sys import exit
-from time import sleep
 from json import (load as jsonload, dump as jsondump)
 from os import path
 import subprocess, os, platform

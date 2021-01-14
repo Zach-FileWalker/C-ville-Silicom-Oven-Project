@@ -137,13 +137,6 @@ class CSVManager:
                 for row in profileReader:
                     dictList.append(row)
 
-                # # printing original string
-                # print("The original string : " + str(test_string))
-
-                # using isdigit() + replace()
-                # Check for float string
-                # res = test_string.replace('.', '', 1).isdigit()
-
                 # check the elements in CSV file
                 for elem in dictList:
                     if not (elem["Time"] != None and elem["Time"].replace('.', '', 1).isdigit()
