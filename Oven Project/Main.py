@@ -192,20 +192,22 @@ def main():
                     if popup_event is None or popup_event == 'Exit':
                         break
 
+            # else (if csv in correct format)
             else:
+                # display the profile as graph
+
                 adam = CvilleOvenTranslator()
 
-                # weak handshake
-                if adam.getTemp() == None:
-                    exit("Could not handshake with oven")
-
                 # read profile only if field not empty
+                # PROBABLY UNNECESSARY, but already implemented before csv file checking
                 if values['-CSV_NAME-'].endswith('.csv'):
                     dictList = owen.readProfile(values['-CSV_NAME-'])
 
+                    # calculate total time and temp
                     allTime = ttcalc(dictList, 'Time')
                     allTemp = ttcalc(dictList, 'Temp')
 
+                    # if no errors with total time and temp, plot the graph
                     if allTime != -1 and allTemp != -1:
                         axzero = plt.subplot()
                         axzero.plot(allTime, allTemp)
@@ -228,32 +230,36 @@ def main():
                     if popup_event is None or popup_event == 'Exit':
                         break
 
+            # else if csv in correct format, run profile
             else:
                 dictList = owen.readProfile(values['-CSV_NAME-'])
                 adam = CvilleOvenTranslator()
 
-                # weak handshake
-                if adam.getTemp() is None:
-                    exit("Could not handshake with oven")
-
+                # setup
                 prevTemp = adam.getTemp()
                 time = [0]
                 total_time = 0
                 set_temp = [prevTemp]
                 get_temp = [prevTemp]
 
+                # calculate total time and total temp parameters to be used in profile estimate
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
 
+                # check if error with total time or temp calculations
                 if allTime == -1 or allTemp == -1:
+                    print("Error with total time or temp calculations")
                     break
 
+                # plot base profile estimate graph
                 ax = plt.subplot()
                 ax.set_xlabel("Time (mins)")
                 ax.set_ylabel("Temp (C)")
                 ax.plot(allTime, allTemp)
 
+                # iterate through each element of profile
                 for elem in dictList:
+                    # draw parameters from dictList -> csv file
                     size_shift = abs(float(elem["Temp"]) - prevTemp)
                     targetTemp = float(elem["Temp"])
                     rampRate = float(elem["Ramp Rate"])
@@ -268,16 +274,20 @@ def main():
 
                     # ramp
                     while accum_temp < size_shift:
-                        plt.cla()
+                        plt.cla()       # clear graph
+
+                        # time bookkeeping
                         total_time += 0.1
                         time.append(total_time)
 
-                        curr_temp += rampRate                   # increment current temperature
+                        # temp bookkeeping and setting
+                        curr_temp += rampRate
                         curr_temp = round(curr_temp, 1)
                         adam.setTemp(curr_temp)
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
+                        # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
                         plt.pause(6)
@@ -288,19 +298,23 @@ def main():
 
                     # dwell
                     while accum_time < float(elem["Time"]):
-                        plt.cla()
+                        plt.cla()       # clear graph
 
+                        # time bookkeeping
                         accum_time += 0.1
                         total_time += 0.1
                         time.append(total_time)
+
+                        # temp bookkeeping and setting
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
+                        # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
                         plt.pause(6)
 
-                    prevTemp = targetTemp
+                    prevTemp = targetTemp       # setup for next loop iteration
 
 
 if __name__ == "__main__":
