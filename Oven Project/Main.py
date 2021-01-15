@@ -84,7 +84,7 @@ def load_settings():
         sg.popup_quick_message(f'exception {e}', 'No settings file found... Creating a blank one', keep_on_top=True,
                            background_color='red', text_color='white')
         with open(config_file, 'w') as f:
-            settings = {'theme': '', 'csv_filepath': '', 'ser_filepath': ''}
+            settings = {'theme': '', 'csv_filepath': '', 'ser_filepath': '', 'time': 0.0}
             jsondump(settings, f)
 
     return settings
@@ -116,12 +116,22 @@ def update_ser_filepath(config_file: str, ser_filepath: str):
         jsondump(settings, f)
 
 
+# updates the most recent time in the JSON settings file
+def update_time(config_file: str, time: float):
+    settings = load_settings()
+    settings["time"] = time
+
+    with open(config_file, 'w') as f:
+        jsondump(settings, f)
+
+
 def main():
 
     # setup
     owen = CSVManager()
     window = None
     configfile = path.join(path.dirname(__file__), r'config_file.cfg')
+    resume = False
 
     # main
     while True:
@@ -138,7 +148,8 @@ def main():
                   [sg.Text('CSV File:', size=(8, 1)), sg.Input(key="-CSV_NAME-", default_text=settings['csv_filepath']),
                    sg.FileBrowse(), sg.Button("Save as Default CSV File")],
                   [sg.Button("Display Profile as Graph"), sg.Button("Run Profile"),
-                   sg.Button("Load Default Oven Settings"), sg.Button("View README")]]
+                   sg.Button("Pause Profile"), sg.Button("Resume Profile")],
+                   [sg.Button("Load Default Oven Settings"), sg.Button("View README")]]
 
         if window is None:
             window = sg.Window('Edge Remote Oven Controller', layout)
@@ -215,7 +226,7 @@ def main():
                         axzero.set_ylabel("Temp (C)")
                         plt.show()
 
-        elif event == "Run Profile":
+        elif event == "Run Profile" or event == "Resume Profile":
 
             # if csv not in correct format
             format = owen.verifyFormat(values['-CSV_NAME-'])
@@ -234,6 +245,11 @@ def main():
             else:
                 dictList = owen.readProfile(values['-CSV_NAME-'])
                 adam = CvilleOvenTranslator()
+                initTemp = adam.getTemp()
+
+                # if event is resume, set variable accordingly
+                if event == "Resume Profile":
+                    resume = True
 
                 # setup
                 prevTemp = adam.getTemp()
@@ -245,6 +261,15 @@ def main():
                 # calculate total time and total temp parameters to be used in profile estimate
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
+
+                # if resuming profile, setup accordingly
+                # if event == "Resume Profile":
+                    # total_time = settings['time']
+                    # postList = []
+                    # for elem in dictList:
+                    #     if elem['Time'] >= total_time:
+                    #         postList.append(elem)
+                    # dictList = postList
 
                 # check if error with total time or temp calculations
                 if allTime == -1 or allTemp == -1:
@@ -278,7 +303,19 @@ def main():
 
                         # time bookkeeping
                         total_time += 0.1
+                        total_time = round(total_time, 1)
                         time.append(total_time)
+
+                        # loop bookkeeping
+                        accum_temp += abs(rampRate)
+
+                        # is it resuming from a bookmark?
+                        if resume is True and total_time < settings['time']:
+                            get_temp.append(initTemp)
+                            continue
+
+                        # more time bookkeeping
+                        update_time(configfile, total_time)
 
                         # temp bookkeeping and setting
                         curr_temp += rampRate
@@ -290,9 +327,14 @@ def main():
                         # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        plt.pause(6)
+                        plt.pause(5.9)
 
-                        accum_temp += abs(rampRate)
+                        # pause graph?
+                        event, values = window.read(timeout=100)
+                        if event == "Pause Profile":
+                            while event != "Resume Profile":
+                                event, values = window.read()
+                                plt.pause(1)
 
                     accum_time = 0
 
@@ -305,6 +347,13 @@ def main():
                         total_time += 0.1
                         time.append(total_time)
 
+                        # is it resuming from a bookmark?
+                        if resume is True and total_time < settings['time']:
+                            get_temp.append(initTemp)
+                            continue
+
+                        update_time(configfile, total_time)
+
                         # temp bookkeeping and setting
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
@@ -312,9 +361,18 @@ def main():
                         # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        plt.pause(6)
+                        plt.pause(5.9)
+
+                        # pause graph?
+                        event, values = window.read(timeout=100)
+                        if event == "Pause Profile":
+                            while event != "Resume Profile":
+                                event, values = window.read()
+                                plt.pause(1)
 
                     prevTemp = targetTemp       # setup for next loop iteration
+
+        resume = False
 
 
 if __name__ == "__main__":
