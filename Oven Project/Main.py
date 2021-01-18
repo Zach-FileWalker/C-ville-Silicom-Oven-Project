@@ -1,3 +1,16 @@
+# ############################################################################
+# Author: Zach Rinehart                         Date last modified: 01/18/2021
+# Property of Silicom Connectivity Solutions
+# ############################################################################
+# This is the big program that draws from the CSVManager class and the
+# CvilleOvenTranslator class. It has various helper meethods to help the main
+# method, and each is as described either by the name or by the description
+# above. As an aside, I named the CSV manager and CvilleOvenTranslator objects
+# in the main method "Owen" and "Adam", respectively, because they are two
+# significant hardware engineers who helped test and improve the project, and
+# I thought it would be fun.
+# ############################################################################
+
 from CSVManager import CSVManager
 import matplotlib.pyplot as plt
 from CvilleOvenTranslator import CvilleOvenTranslator
@@ -207,8 +220,6 @@ def main():
             else:
                 # display the profile as graph
 
-                adam = CvilleOvenTranslator()
-
                 # read profile only if field not empty
                 # PROBABLY UNNECESSARY, but already implemented before csv file checking
                 if values['-CSV_NAME-'].endswith('.csv'):
@@ -261,15 +272,6 @@ def main():
                 # calculate total time and total temp parameters to be used in profile estimate
                 allTime = ttcalc(dictList, 'Time')
                 allTemp = ttcalc(dictList, 'Temp')
-
-                # if resuming profile, setup accordingly
-                # if event == "Resume Profile":
-                    # total_time = settings['time']
-                    # postList = []
-                    # for elem in dictList:
-                    #     if elem['Time'] >= total_time:
-                    #         postList.append(elem)
-                    # dictList = postList
 
                 # check if error with total time or temp calculations
                 if allTime == -1 or allTemp == -1:
@@ -327,7 +329,7 @@ def main():
                         # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        plt.pause(5.9)
+                        plt.pause(4.85)
 
                         # pause graph?
                         event, values = window.read(timeout=100)
@@ -345,6 +347,7 @@ def main():
                         # time bookkeeping
                         accum_time += 0.1
                         total_time += 0.1
+                        total_time = round(total_time, 1)
                         time.append(total_time)
 
                         # is it resuming from a bookmark?
@@ -361,7 +364,7 @@ def main():
                         # plot graph
                         ax.plot(allTime, allTemp)
                         ax.plot(time, get_temp)
-                        plt.pause(5.9)
+                        plt.pause(4.85)
 
                         # pause graph?
                         event, values = window.read(timeout=100)

@@ -1,3 +1,17 @@
+# ############################################################################
+# Author: Zach Rinehart                         Date last modified: 01/18/2021
+# Property of Silicom Connectivity Solutions
+# ############################################################################
+# The CSV Manager Class is a class that manages the CSV files used as profiles
+# for OPUS (Oven Project Ultimate Service). Its purpose is essentially to read
+# CSV files, parsing them in the appropriate format, and returning a list of
+# dictionaries for the main file to use. It can also verify a CSV file for
+# correctness with regards to the file type, the column types, and the file
+# contents. There are also some experimental features that modify the contents
+# of the CSV file, but they are not currently implemented. If anyone wants to
+# tinker with the code, feel free to try these features.
+# ############################################################################
+
 import csv
 from os import path
 
@@ -13,6 +27,7 @@ class CSVManager:
         self.profilesDict = csv.DictReader(self.csv_profiles_dir)
 
     # add a new profile
+    # no longer necessary, but is present in case anyone wants to experiment with the code
     def addProfile(self, name: str):
         fileName = name
 
@@ -46,6 +61,7 @@ class CSVManager:
         return True
 
     # modify a profile
+    # no longer necessary, but is present in case anyone wants to experiment with the code
     def modProfile(self, profileName: str, dictList: [{}]):
 
         if path.exists(profileName):
@@ -86,6 +102,7 @@ class CSVManager:
         return dictList
 
     # extract list of just x values
+    # no longer necessary, but is present in case anyone wants to experiment with the code
     def xtract(self, dictList: [{}]):
 
         # empty list for x values
@@ -98,6 +115,7 @@ class CSVManager:
         return xlist
 
     # extract list of just y values
+    # no longer necessary, but is present in case anyone wants to experiment with the code
     def ytract(self, dictList: [{}]):
 
         # empty list for y values
@@ -110,6 +128,7 @@ class CSVManager:
         return ylist
 
     # extract list of just y values
+    # no longer necessary, but is present in case anyone wants to experiment with the code
     def ztract(self, dictList: [{}]):
 
         # empty list for z values

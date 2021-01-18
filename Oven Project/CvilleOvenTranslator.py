@@ -1,3 +1,19 @@
+# ############################################################################
+# Author: Zach Rinehart                         Date last modified: 01/18/2021
+# Property of Silicom Connectivity Solutions
+# ############################################################################
+# This is the OvenTranslator class for the oven in the Cville office. As of
+# the time of writing this, the Cville oven is currently the only oven this
+# program is being used for. Below, you will find methods that have to do with
+# interfacing between the oven and other software (particularly the main
+# file). Note that this software is dependant on the current oven serial setup,
+# which includes a connection linking the serial port to a breakout board,
+# the the breakout board to cables, which then link to a remote server, which
+# then connects over ethernet to the network, which can then be connected to
+# over WiFi. The remote server acts as a networked serial port that can be
+# communicated with over Telnet.
+# ############################################################################
+
 from OvenTranslator import OvenTranslator
 from telnetlib import Telnet
 from time import sleep
