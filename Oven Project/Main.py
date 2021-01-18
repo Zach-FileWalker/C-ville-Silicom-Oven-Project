@@ -11,8 +11,6 @@
 # I thought it would be fun.
 # ############################################################################
 
-# DEBUG
-
 from CSVManager import CSVManager
 import matplotlib.pyplot as plt
 from CvilleOvenTranslator import CvilleOvenTranslator
