@@ -19,6 +19,7 @@ from sys import exit
 from json import (load as jsonload, dump as jsondump)
 from os import path
 import subprocess, os, platform
+from time import time
 
 
 # Time/Temperature calculator for estimates
@@ -264,7 +265,7 @@ def main():
 
                 # setup
                 prevTemp = adam.getTemp()
-                time = [0]
+                time_list = [0]
                 total_time = 0
                 set_temp = [prevTemp]
                 get_temp = [prevTemp]
@@ -279,13 +280,20 @@ def main():
                     break
 
                 # plot base profile estimate graph
-                ax = plt.subplot()
+                fig, ax = plt.subplots()
                 ax.set_xlabel("Time (mins)")
                 ax.set_ylabel("Temp (C)")
-                ax.plot(allTime, allTemp)
+                ax.set_ylim([(min(allTemp)*1.05), (max(allTemp)*1.05)])
+                ax.set_xlim([(min(allTime) - 1), (max(allTime)*1.05)])
+                total_est, = ax.plot(allTime, allTemp, color="blue")
+                total_read, = ax.plot([], [], color="orange")
+
+                # sleep time bookkeeping
+                start_time = time()
 
                 # iterate through each element of profile
                 for elem in dictList:
+
                     # draw parameters from dictList -> csv file
                     size_shift = abs(float(elem["Temp"]) - prevTemp)
                     targetTemp = float(elem["Temp"])
@@ -301,12 +309,11 @@ def main():
 
                     # ramp
                     while accum_temp < size_shift:
-                        plt.cla()       # clear graph
 
                         # time bookkeeping
                         total_time += 0.1
                         total_time = round(total_time, 1)
-                        time.append(total_time)
+                        time_list.append(total_time)
 
                         # loop bookkeeping
                         accum_temp += abs(rampRate)
@@ -326,10 +333,14 @@ def main():
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
-                        # plot graph
-                        ax.plot(allTime, allTemp)
-                        ax.plot(time, get_temp)
-                        plt.pause(4.85)
+                        # adjust graph
+                        total_read.set_data(time_list, get_temp)
+
+                        # sleep
+                        elapsed_time = time() - start_time
+                        target_time = len(time_list) * 6
+                        pauseval = target_time - elapsed_time
+                        plt.pause(pauseval)
 
                         # pause graph?
                         event, values = window.read(timeout=100)
@@ -342,29 +353,33 @@ def main():
 
                     # dwell
                     while accum_time < float(elem["Time"]):
-                        plt.cla()       # clear graph
 
                         # time bookkeeping
                         accum_time += 0.1
                         total_time += 0.1
                         total_time = round(total_time, 1)
-                        time.append(total_time)
+                        time_list.append(total_time)
 
                         # is it resuming from a bookmark?
                         if resume is True and total_time < settings['time']:
                             get_temp.append(initTemp)
                             continue
 
+                        # more time bookkeeping
                         update_time(configfile, total_time)
 
                         # temp bookkeeping and setting
                         set_temp.append(curr_temp)
                         get_temp.append(adam.getTemp())
 
-                        # plot graph
-                        ax.plot(allTime, allTemp)
-                        ax.plot(time, get_temp)
-                        plt.pause(4.85)
+                        # adjust graph
+                        total_read.set_data(time_list, get_temp)
+
+                        # sleep
+                        elapsed_time = time() - start_time
+                        target_time = len(time_list) * 6
+                        pauseval = target_time - elapsed_time
+                        plt.pause(pauseval)
 
                         # pause graph?
                         event, values = window.read(timeout=100)
@@ -373,7 +388,7 @@ def main():
                                 event, values = window.read()
                                 plt.pause(1)
 
-                    prevTemp = targetTemp       # setup for next loop iteration
+                    prevTemp = targetTemp  # setup for next loop iteration
 
         resume = False
 
