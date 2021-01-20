@@ -15,7 +15,6 @@ from CSVManager import CSVManager
 import matplotlib.pyplot as plt
 from CvilleOvenTranslator import CvilleOvenTranslator
 import PySimpleGUI as sg
-from sys import exit
 from json import (load as jsonload, dump as jsondump)
 from os import path
 import subprocess, os, platform
@@ -340,7 +339,8 @@ def main():
                         elapsed_time = time() - start_time
                         target_time = len(time_list) * 6
                         pauseval = target_time - elapsed_time
-                        plt.pause(pauseval)
+                        if pauseval > 0:
+                            plt.pause(pauseval)
 
                         # pause graph?
                         event, values = window.read(timeout=100)
@@ -379,7 +379,8 @@ def main():
                         elapsed_time = time() - start_time
                         target_time = len(time_list) * 6
                         pauseval = target_time - elapsed_time
-                        plt.pause(pauseval)
+                        if pauseval > 0:
+                            plt.pause(pauseval)
 
                         # pause graph?
                         event, values = window.read(timeout=100)
