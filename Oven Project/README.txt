@@ -8,10 +8,13 @@ Intro:
 	OPUS was designed to connect to the oven via the Silicom LAN. In developing OPUS, we came up with the ultimate jerry-rig system. We first used a breakout board to connect a cable to the oven's serial port. The cable then connects to a remote server, which then connects to Ethernet, which computers can connect to over WI-FI. This enables OPUS to be run from anywhere that is connected to the ADI WI-FI network, even through a VPN. This configuration also enables users to connect to the oven via Telnet without OPUS to change the oven parameters wirelessly. To see what language the oven uses, consult the documentation in the oven binder in the Silicom office of Charlottesville.
 	Read on for more details of how OPUS works.
 
-Setup and Inner Workings:
-	Below is a list of dependancies for the program:
-	1. The program can still communicate with the oven if the oven is not switched "on", but it needs to be switched "on" in order for the profiles to be run.
-	2. The remote server (the black box thing to the left side of the oven) must be plugged both into power, the oven, and Ethernet.
+
+Keep in mind:
+	A. LOADING DEFAULT SETTINGS TO THE OVEN WILL NOT RESET THE DEGREE UNIT TYPE TO CELSIUS. If the oven happens to be in "Fahrenheit" mode, then it will execute the program in degrees Fahrenheit. OPUS is designed to work in degrees Celsius.
+	B. Below is a list of dependancies for the program:
+		1. The program can still communicate with the oven if the oven is not switched "on", but it needs to be switched "on" in order for the profiles to be run.
+		2. The remote server (the black box thing to the left side of the oven) must be plugged both into power, the oven, and Ethernet.
+
 
 Profiles/CSV Files:
 	The CSV files for the program are composed of different states. Each row denotes a state. Further, each state is composed of three sections: the Temp section, the Time section, and the Ramp Rate section. The Temp section describes the temperature of the state in degrees Celsius. For example, a Temp value of 50 would mean a value of 50 degrees Celsius for that state. The next section, Time, indicates the time length of that state in minutes. For example, a Time value of 3 would mean that the state goes for 3 minutes. This is also known as the dwell time. The third value, Ramp Rate, describes approximately how fast (in degrees per minute) the oven switches (or “ramps”) to that state. For example, a Ramp Rate of 5 would mean the oven will move approximately 5 degrees per minute to get to that state. Note that due to the complications of a dated oven, this value is highly approximate.
@@ -38,4 +41,4 @@ Running the Program:
 	
 KNOWN BUGS:
 	1. OPUS currently runs on my computer, but it will not run on the second-tested computer (Len's) without eventually hanging or becoming unresponsive. Both the Python file and two versions of the EXE file (built with different tools) seem to run fine on my computer, but Len's computer does not seem to like either EXE file. Len does not have Python on his computer, so the Python file has not been tested on his computer. We are currently debugging this issue.
-	
+	2. There has sometimes been an issue of sometimes getting a false temperature read that stays consistent and then jumps back to the actual read temp.
