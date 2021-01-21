@@ -1,6 +1,6 @@
 Zach Rinehart
-01/11/2021
-Oven Project Manual v2
+01/21/2021
+OPUS README
 
 Intro:
 	Welcome to my oven project! I named it OPUS (Oven Project Ultimate Service), but you can call it whatever you want. I'm Zach Rinehart, the creator of OPUS, and in this README, I'll be walking you through how it works.
